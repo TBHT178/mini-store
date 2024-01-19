@@ -1,8 +1,11 @@
 ﻿using BackEnd.Data;
 using BackEnd.Entities;
+using BackEnd.Extensions;
+using BackEnd.RequestHelpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace BackEnd.Controllers
 {
@@ -18,9 +21,18 @@ namespace BackEnd.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<PagedList<Product>>> GetProducts([FromQuery]ProductParams productParams)
         {
-            return await _storeContext.Products.ToListAsync();
+            var query =  _storeContext.Products
+                .Sort(productParams.OrderBy)
+                .Search(productParams.SearchTerm)
+                .Filter(productParams.Brands, productParams.Types)
+                .AsQueryable();
+            var products = await PagedList<Product>.ToPagedList(query, productParams.PageNumber, productParams.PageSize);
+
+            Response.AddPaginationHeader(products.MetaData);
+
+            return products;
         }
 
         [HttpGet("{id}")]
@@ -32,6 +44,15 @@ namespace BackEnd.Controllers
                 return NotFound();
             }
             return Ok(product);
+        }
+
+        [HttpGet("filters")]
+        public async Task<IActionResult> GetFilters()
+        {
+            var brands = await _storeContext.Products.Select(x => x.Brand).Distinct().ToListAsync();
+            var types = await _storeContext.Products.Select(x => x.Type).Distinct().ToListAsync();
+
+            return Ok(new {brands, types});
         }
     }
 }

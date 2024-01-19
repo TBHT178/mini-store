@@ -134,3 +134,4 @@ D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\obj\Debug\net8.0\refint\BackEnd.dll
 D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\obj\Debug\net8.0\BackEnd.pdb
 D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\obj\Debug\net8.0\BackEnd.genruntimeconfig.cache
 D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\obj\Debug\net8.0\ref\BackEnd.dll
+D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\obj\Debug\net8.0\BackEnd.sourcelink.json

@@ -13,3 +13,4 @@
         public int QuantityInStock { get; set; }
     }
 }
+
