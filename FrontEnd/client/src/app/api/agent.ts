@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "react-toastify";
 import { router } from "../router/Routes";
 import { PaginatedResponse } from "../models/Pagination";
+import { store } from "../store/configureStore";
 
 axios.defaults.baseURL = 'https://localhost:7201/api/';
 //Receive cookie and set cookie inside our application storage
@@ -11,6 +12,12 @@ const responseBody = (response: AxiosResponse) => response.data;
 
 //fake delay while fetching data
 const sleep = () => new Promise(resolve => setTimeout(resolve, 500));
+
+axios.interceptors.request.use(config => {
+    const token = store.getState().account.user?.token;
+    if(token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+})
 
 axios.interceptors.response.use(async response =>{
     await sleep();
@@ -40,7 +47,9 @@ axios.interceptors.response.use(async response =>{
         case 401: 
             toast.error(data.title);
             break;
-
+        case 403:
+            toast.error('You are not allowed to do that!');
+            break;       
         case 500: 
             router.navigate('/server-error', {state: {error: data}});
             break;
@@ -78,10 +87,16 @@ const Cart = {
     removeItem: (productId: number, quantity =1) => requests.delete(`cart?productId=${productId}&quantity=${quantity}`)
 }
 
+const Account = {
+    login: (value:any) => requests.post('account/login', value),
+    register: (value: any) => requests.post('account/register', value),
+    curentUser: () => requests.get('account/curentUser') 
+}
+
 const agent = {
     Catalog,
     TestErrors,
-    Cart
+    Cart, Account
 }
 
 export default agent;
