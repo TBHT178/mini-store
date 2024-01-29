@@ -1,31 +1,39 @@
 import Avatar from "@mui/material/Avatar";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import { Alert, AlertTitle, List, ListItem, ListItemText, Paper } from "@mui/material";
+import { Paper } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import { FieldValues, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { LoadingButton } from "@mui/lab";
-import { useAppDispatch } from "../../app/store/configureStore";
-import { signInUser } from "./accountSlice";
+
 import agent from "../../app/api/agent";
-import { useState } from "react";
+import { toast } from "react-toastify";
 
 export default function Register() {
-    const [validationErrors, setvalidationErrors] = useState([]);
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();
-    const {register, handleSubmit, formState:{isSubmitting, errors, isValid}} = useForm({
+    const {register, handleSubmit, setError, formState:{isSubmitting, errors, isValid}} = useForm({
         mode: 'all'
     });
 
+    function hanleApiErrors(errors: any){
+        if(errors) {
+            errors.forEach((error:string) => {
+                if(error.includes('Password')){
+                    setError('password', {message:error});
+                } else if(error.includes('Email')){
+                    setError('email', {message:error});
+                } else if(error.includes('Username')){
+                    setError('username', {message:error});
+                } 
+            });
+        }
+    }
 
     return (
         <Container
@@ -54,8 +62,16 @@ export default function Register() {
             Register
             </Typography>
             <Box component="form"
-             onSubmit={handleSubmit(data=> agent.Account.register(data).catch(error => setvalidationErrors(error)))} 
-             noValidate sx={{ mt: 1 }}>
+                onSubmit={handleSubmit((data) =>
+                    agent.Account.register(data)
+                        .then(() => {
+                            toast.success('Registration successful - you can now login');
+                            navigate('/login');
+                        })
+                        .catch(error => hanleApiErrors(error)))
+                }
+                noValidate sx={{ mt: 1 }}
+            >
             <TextField
                 margin="normal"
                 fullWidth
@@ -69,7 +85,14 @@ export default function Register() {
                 margin="normal"
                 fullWidth
                 label="Email"
-                {...register('email', {required:'Email is required'})}
+                {...register('email', 
+                    {required:'Email is required',
+                    pattern: {
+                        value: /^\w+[\w-.]*@\w+((-\w+)|(\w*))\.[a-z]{2,3}$/,
+                        message: "Not a valid email address"
+                    }
+                    })
+                }
                 error={!!errors.email}
                 helperText={errors?.email?.message?.toString()}
             />
@@ -79,23 +102,15 @@ export default function Register() {
                 label="Password"
                 type="password"
                 autoComplete="current-password"
-                {...register('password', {required:'Password is required'})}
+                {...register('password', 
+                    {required:'Password is required',  pattern: {
+                    value: /(?=^.{6,10}$)(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&amp;*()_+}{&quot;:;'?/&gt;.&lt;,])(?!.*\s).*$/,
+                    message: "password does not meet complexity requirement"
+                    }})
+                }
                 error={!!errors.password}
                 helperText={errors?.password?.message?.toString()}
             />
-
-            {validationErrors.length > 0 && 
-                <Alert severity="error">
-                    <AlertTitle>Validation Errors</AlertTitle>
-                    <List>
-                        {validationErrors.map(error =>(
-                            <ListItem key={error}>
-                                <ListItemText>{error}</ListItemText>
-                            </ListItem>
-                        ))}
-                    </List>
-                </Alert>
-            }
 
             <LoadingButton loading={isSubmitting}
                 disabled={!isValid}

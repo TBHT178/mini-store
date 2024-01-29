@@ -1,6 +1,7 @@
 ﻿using BackEnd.Data;
 using BackEnd.DTOs;
 using BackEnd.Entities;
+using BackEnd.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,13 +21,13 @@ namespace BackEnd.Controllers
         [HttpGet(Name = "GetCart")]
         public async Task<ActionResult<CartDto>> GetCart()
         {
-            var cart = await RetrieveCart();
+            var cart = await RetrieveCart(GetBuyerId());
 
             if (cart == null)
             {
                 return NotFound();
             }
-            return MapCartToDto(cart);
+            return cart.MapCartDto();
         }
 
 
@@ -34,7 +35,7 @@ namespace BackEnd.Controllers
         public async Task<ActionResult<CartDto>> AddIemToCart(int productId, int quantity)
         {
             // Get Cart || Create Cart
-            var cart = await RetrieveCart();
+            var cart = await RetrieveCart(GetBuyerId());
             if(cart == null)
             {
                 cart = CreateCart();
@@ -49,7 +50,7 @@ namespace BackEnd.Controllers
 
             // Save changes
             var result = await _context.SaveChangesAsync();
-            if(result > 0) return CreatedAtRoute("GetCart", MapCartToDto(cart));
+            if(result > 0) return CreatedAtRoute("GetCart", cart.MapCartDto());
 
             //if fail
             return BadRequest(new ProblemDetails { Title = "Prolem saving item to cart" });
@@ -61,7 +62,7 @@ namespace BackEnd.Controllers
         public async Task<ActionResult> RemoveCartItem(int productId, int quantity)
         {
             // Get Cart
-            var cart = await RetrieveCart();
+            var cart = await RetrieveCart(GetBuyerId());
             if(cart == null) { return NotFound(); }
             
             // Remove item or reduce quantity
@@ -75,58 +76,45 @@ namespace BackEnd.Controllers
             return BadRequest(new ProblemDetails { Title = "Prolem removing item from cart" });
         }
 
-        private async Task<Cart?> RetrieveCart()
+        private async Task<Cart> RetrieveCart(string buyerId)
         {
-            var cart = await _context.Carts
-                                .Include(ci => ci.Items)
-                                .ThenInclude(p => p.Product)
-                                .FirstOrDefaultAsync(x => x.BuyerId == Request.Cookies["BuyerId"]);
-
-            // Ensure that cart.Items is initialized as an empty array if it's null
-            if (cart != null && cart.Items == null)
+            if (string.IsNullOrEmpty(buyerId))
             {
-                cart.Items = new List<CartItem>();
+                Response.Cookies.Delete("buyerId");
+                return null;
             }
 
-            return cart;
+            return await _context.Carts
+                .Include(i => i.Items)
+                .ThenInclude(p => p.Product)
+                .FirstOrDefaultAsync(x => x.BuyerId == buyerId);
+        }
+
+        private string GetBuyerId()
+        {
+            return User.Identity?.Name ?? Request.Cookies["buyerId"];
         }
 
         private Cart? CreateCart()
         {
-            // Generate globally unique identifier
-            var buyerId = Guid.NewGuid().ToString();
-
-            // Set cookieoption
-            var cookieOptions = new CookieOptions { IsEssential= true, Expires = DateTime.Now.AddDays(30), SameSite=SameSiteMode.None, Secure=true };
-
-            // Add cookie to response
-            Response.Cookies.Append("buyerId", buyerId, cookieOptions);
-
-            // create new cart
-            var cart = new Cart { BuyerId = buyerId };
-
-            // Start tracking entity that added
-            _context.Carts.Add(cart);
-            return cart;
-        }
-
-        private CartDto MapCartToDto(Cart? cart)
-        {
-            return new CartDto
+            var buyerId = User.Identity?.Name;
+            if (string.IsNullOrEmpty(buyerId))
             {
-                Id = cart.Id,
-                BuyerId = cart.BuyerId,
-                Items = cart.Items.Select(item => new CartItemDto
-                {
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    Name = item.Product.Name,
-                    Brand = item.Product.Brand,
-                    Type = item.Product.Type,
-                    PictureUrl = item.Product.PictureUrl,
-                    Price = item.Product.Price
-                }).ToList(),
-            };
+                // Generate globally unique identifier
+                buyerId = Guid.NewGuid().ToString();
+
+                // Set cookieoption
+                var cookieOptions = new CookieOptions { IsEssential= true, Expires = DateTime.Now.AddDays(30), SameSite=SameSiteMode.None, Secure=true };
+
+                // Add cookie to response
+                Response.Cookies.Append("buyerId", buyerId, cookieOptions);
+
+            }
+
+            var basket = new Cart { BuyerId = buyerId };
+            _context.Carts.Add(basket);
+            return basket;
         }
+
     }
 }

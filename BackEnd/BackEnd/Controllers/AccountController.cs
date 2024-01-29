@@ -1,10 +1,13 @@
-﻿using BackEnd.DTOs;
+﻿using BackEnd.Data;
+using BackEnd.DTOs;
 using BackEnd.Entities;
+using BackEnd.Extensions;
 using BackEnd.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Controllers
 {
@@ -14,10 +17,12 @@ namespace BackEnd.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly TokenService _tokenService;
-        public AccountController(UserManager<User> userManager, TokenService tokenService)
+        private readonly StoreContext _context;
+        public AccountController(UserManager<User> userManager, TokenService tokenService, StoreContext context)
         {
             _userManager = userManager;
             _tokenService = tokenService;
+            _context = context;
         }
 
         [HttpPost("login")]
@@ -28,10 +33,23 @@ namespace BackEnd.Controllers
             {
                 return Unauthorized();
             }
+
+            var userCart = await RetrieveCart(loginDto.Username);
+            var anonCart = await RetrieveCart(Request.Cookies["buyerId"]);
+
+            if (anonCart != null)
+            {
+                if (userCart != null) _context.Carts.Remove(userCart);
+                anonCart.BuyerId = user.UserName;
+                Response.Cookies.Delete("buyerId");
+                await _context.SaveChangesAsync();
+            }
+
             return new UserDto
             {
                 Email = user.Email,
-                Token = await _tokenService.GenerateToken(user)
+                Token = await _tokenService.GenerateToken(user),
+                Cart = anonCart != null ? anonCart.MapCartDto() : userCart?.MapCartDto()
             };
         }
 
@@ -61,11 +79,33 @@ namespace BackEnd.Controllers
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
 
+            var userCart = await RetrieveCart(User.Identity.Name);
+
             return new UserDto
             {
                 Email = user.Email,
-                Token = await _tokenService.GenerateToken(user)
+                Token = await _tokenService.GenerateToken(user),
+                Cart = userCart?.MapCartDto()
             };
-        } 
+        }
+
+        private async Task<Cart?> RetrieveCart(string buyerId)
+        {
+            if (string.IsNullOrEmpty(buyerId))
+            {
+                Response.Cookies.Delete("buyerId");
+                return null;
+            }
+
+            return await _context.Carts
+                .Include(i => i.Items)
+                .ThenInclude(p => p.Product)
+                .FirstOrDefaultAsync(x => x.BuyerId == buyerId);
+        }
+
+        private string GetBuyerId()
+        {
+            return User.Identity?.Name ?? Request.Cookies["buyerId"];
+        }
     }
 }
