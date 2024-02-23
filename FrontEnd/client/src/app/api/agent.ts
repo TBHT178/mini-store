@@ -4,7 +4,7 @@ import { router } from "../router/Routes";
 import { PaginatedResponse } from "../models/Pagination";
 import { store } from "../store/configureStore";
 
-axios.defaults.baseURL = 'https://localhost:7201/api/';
+axios.defaults.baseURL = 'http://localhost:5058/api/';
 //Receive cookie and set cookie inside our application storage
 axios.defaults.withCredentials = true;
 
@@ -65,6 +65,12 @@ const requests = {
     post: (url: string, body: {}) => axios.post(url, body).then(responseBody),
     put: (url: string, body: {}) => axios.put(url, body).then(responseBody),
     delete: (url: string) => axios.delete(url).then(responseBody),
+    postForm: (url: string, data: FormData) => axios.post(url, data, {
+        headers: {'Content-Type': 'multipart/form-data'}
+    }).then(responseBody),
+    putForm: (url: string, data: FormData) => axios.put(url, data, {
+        headers: {'Content-Type': 'multipart/form-data'}
+    }).then(responseBody)
 }
 
 const Catalog = {
@@ -90,13 +96,27 @@ const Cart = {
 const Account = {
     login: (value:any) => requests.post('account/login', value),
     register: (value: any) => requests.post('account/register', value),
-    curentUser: () => requests.get('account/curentUser') 
+    curentUser: () => requests.get('account/curentUser'),
+    fetchAddress: () => requests.get('account/savedAddress') 
+}
+
+const Orders = {
+    list: () => requests.get('orders'),
+    fetch: (id: number) => requests.get(`orders/${id}`),
+    create: (values: any) => requests.post('orders', values)
+}
+
+const Payments = {
+    createPaymentIntent: () => requests.post('payments', {})
 }
 
 const agent = {
     Catalog,
     TestErrors,
-    Cart, Account
+    Cart, 
+    Account,
+    Orders,
+    Payments
 }
 
 export default agent;

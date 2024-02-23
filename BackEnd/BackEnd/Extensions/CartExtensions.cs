@@ -1,5 +1,6 @@
 ﻿using BackEnd.DTOs;
 using BackEnd.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Extensions
 {
@@ -11,6 +12,8 @@ namespace BackEnd.Extensions
             {
                 Id = cart.Id,
                 BuyerId = cart.BuyerId,
+                PaymentIntentId = cart.PaymentIntentId,
+                ClientSecret = cart.ClientSecret,
                 Items = cart.Items.Select(item => new CartItemDto
                 {
                     ProductId = item.ProductId,
@@ -22,6 +25,12 @@ namespace BackEnd.Extensions
                     Price = item.Product.Price
                 }).ToList(),
             };
+        }
+
+        public static IQueryable<Cart> RetrieveCartWithItems(this IQueryable<Cart> query, string buyerId)
+        {
+            return query.Include(i => i.Items)
+                .ThenInclude(p => p.Product).Where(b => b.BuyerId == buyerId);
         }
     }
 }

@@ -8,17 +8,19 @@ import Catalog from "../../features/catalog/Catalog";
 import ServerError from "../errors/ServerError";
 import NotFound from "../errors/NotFound";
 import CartPage from "../../features/cart/CartPage";
-import CheckoutPage from "../../features/checkout/CheckoutPage";
 import Login from "../../features/account/Login";
 import Register from "../../features/account/Register";
 import RequireAuth from "./RequireAuth";
+import Orders from "../../features/orders/Orders";
+import CheckoutWrapper from "../../features/checkout/CheckoutWrapper";
 
 export const router = createBrowserRouter([{
     path: '/',
     element: <App />,
     children:[
         {element: <RequireAuth />, children: [
-            {path: '/checkout', element: <CheckoutPage />},
+            {path: '/checkout', element: <CheckoutWrapper />},
+            {path: '/orders', element: <Orders />},
         ]},
         {path: '', element: <HomePage />},
         {path: '/catalog', element: <Catalog/>},

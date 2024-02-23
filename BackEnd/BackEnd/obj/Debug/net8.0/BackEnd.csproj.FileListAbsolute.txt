@@ -142,3 +142,5 @@ D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\bin\Debug\net8.0\Microsoft.AspNetCore.Id
 D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\bin\Debug\net8.0\Microsoft.Extensions.Identity.Core.dll
 D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\bin\Debug\net8.0\Microsoft.Extensions.Identity.Stores.dll
 D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
+D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\bin\Debug\net8.0\Newtonsoft.Json.dll
+D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\bin\Debug\net8.0\Stripe.net.dll
