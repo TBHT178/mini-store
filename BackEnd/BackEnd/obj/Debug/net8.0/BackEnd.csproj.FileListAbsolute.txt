@@ -144,3 +144,5 @@ D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\bin\Debug\net8.0\Microsoft.Extensions.Id
 D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
 D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\bin\Debug\net8.0\Newtonsoft.Json.dll
 D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\bin\Debug\net8.0\Stripe.net.dll
+D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\bin\Debug\net8.0\AutoMapper.dll
+D:\Tram\.NET\Dev-Dotnet\BackEnd\BackEnd\bin\Debug\net8.0\CloudinaryDotNet.dll

@@ -4,7 +4,7 @@ import { router } from "../router/Routes";
 import { PaginatedResponse } from "../models/Pagination";
 import { store } from "../store/configureStore";
 
-axios.defaults.baseURL = 'http://localhost:5058/api/';
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 //Receive cookie and set cookie inside our application storage
 axios.defaults.withCredentials = true;
 
@@ -20,7 +20,7 @@ axios.interceptors.request.use(config => {
 })
 
 axios.interceptors.response.use(async response =>{
-    await sleep();
+    if (process.env.NODE_ENV === 'development') await sleep();
     const pagination = response.headers['pagination'];
     if(pagination){
         response.data = new PaginatedResponse(response.data, JSON.parse(pagination));
@@ -110,13 +110,28 @@ const Payments = {
     createPaymentIntent: () => requests.post('payments', {})
 }
 
+function createFormData(item: any) {
+    let formData = new FormData()
+    for (const key in item) {
+        formData.append(key, item[key])
+    }
+    return formData;
+}
+
+const Admin = {
+    createProduct: (product: any) => requests.postForm('products', createFormData(product)),
+    updateProduct: (product: any) => requests.putForm('products', createFormData(product)),
+    deleteProduct: (id: number) => requests.delete(`products/${id}`)
+}
+
 const agent = {
     Catalog,
     TestErrors,
     Cart, 
     Account,
     Orders,
-    Payments
+    Payments,
+    Admin
 }
 
 export default agent;

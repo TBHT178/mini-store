@@ -2,6 +2,7 @@ using Azure;
 using BackEnd.Data;
 using BackEnd.Entities;
 using BackEnd.Middleware;
+using BackEnd.RequestHelpers;
 using BackEnd.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -91,6 +92,8 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<ImageService>();
+builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 
 var app = builder.Build();
 var publishableKey = builder.Configuration["StripeSettings:PublishableKey"];

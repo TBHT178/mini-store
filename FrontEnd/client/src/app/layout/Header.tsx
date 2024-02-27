@@ -40,7 +40,7 @@ export default function Header({darkMode, handleThemeChange} : Props){
 
     
     return(
-        <AppBar position="static" sx={{mb: 4}}>
+        <AppBar position="static">
             <Toolbar sx={{display:'flex', justifyContent:'space-between', alignItems: 'center'}}>
 
                 <Box display='flex' alignItems={'center'}>
@@ -62,6 +62,14 @@ export default function Header({darkMode, handleThemeChange} : Props){
                             {title.toUpperCase()}
                         </ListItem>
                     ))}
+                    {user && user.roles?.includes('Admin') &&
+                    <ListItem
+                            component={NavLink}
+                            to={'/inventory'}            
+                            sx={navStyles}                       >
+                            INVENTORY
+                        </ListItem>
+                    }
                 </List>
 
                 <Box display='flex'  alignItems={'center'}>
