@@ -127,6 +127,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+//middleware to serve static file of front end
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // Handle CORS preflight requests
 
 app.UseCors("MyCors");
@@ -136,5 +140,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapFallbackToController("Index", "Fallback");
 
 app.Run();

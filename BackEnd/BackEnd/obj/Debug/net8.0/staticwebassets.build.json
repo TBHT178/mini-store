@@ -1,11 +1,19 @@
 {
   "Version": 1,
-  "Hash": "cPqfaYa80spAnn83F5ijizHSf4K7X8YH25xJLDw7OM8=",
+  "Hash": "9RHT/IdMpdkHp5izyw2+RMO4DqA5PbujRUBbcvDZv+I=",
   "Source": "BackEnd",
   "BasePath": "_content/BackEnd",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "BackEnd\\wwwroot",
+      "Source": "BackEnd",
+      "ContentRoot": "D:\\Tram\\.NET\\Dev-Dotnet\\BackEnd\\BackEnd\\wwwroot\\",
+      "BasePath": "_content/BackEnd",
+      "Pattern": "**"
+    }
+  ],
   "Assets": []
 }
